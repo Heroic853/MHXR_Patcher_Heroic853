@@ -1,0 +1,124 @@
+===========================================================
+  MHXR Patcher - istruzioni
+===========================================================
+
+A COSA SERVE
+------------
+Monster Hunter Explore e' stato chiuso, e il gioco cerca ancora i server
+Capcom che non esistono piu'. Questo programma prende la TUA copia del gioco
+e le cambia due cose:
+
+  - l'indirizzo del server, per farla puntare a un server privato
+  - la lingua dei testi, per metterla in inglese (traduzione parziale)
+
+IMPORTANTE: il programma NON contiene il gioco e non lo scarica. Devi avere
+gia' il tuo file APK. Se non ce l'hai, questo strumento non ti serve a niente.
+
+
+COSA TI SERVE
+-------------
+  1. Windows 10 o 11, 64 bit
+  2. Il JDK di Java, versione 17 o superiore
+  3. La tua copia del gioco (file .apk) — SOLO VERSIONE GIAPPONESE, vedi sotto
+
+ATTENZIONE AL PUNTO 3 - solo la versione giapponese funziona.
+La versione Taiwan del gioco ha un sistema anti-manomissione (AppGuard)
+incorporato che blocca l'avvio di qualunque APK ri-firmato con una chiave
+diversa da quella originale Capcom — e questo programma, come qualunque altro
+patcher, deve ri-firmare l'APK. Con la versione Taiwan il gioco si apre e si
+chiude subito, senza nessun messaggio, indipendentemente da cosa fai: non e'
+un bug del patcher, e' quel controllo. La versione giapponese non ha questo
+sistema e funziona regolarmente.
+
+ATTENZIONE AL PUNTO 2 - e' l'errore piu' comune.
+Serve il JDK, NON il JRE. Sono due cose diverse e si chiamano quasi uguale.
+Il programma usa keytool, che esiste solo nel JDK: se installi il "Java"
+generico che trovi cercando su internet, quasi sicuramente prendi il JRE e
+il patcher ti dira' che Java non c'e', anche se tu lo vedi installato.
+
+Prendi Eclipse Temurin JDK 17 (gratuito) da:  https://adoptium.net
+Nella pagina scegli "JDK", non "JRE".
+
+
+PRIMA DI COMINCIARE - LEGGI, E' LA PARTE IMPORTANTE
+---------------------------------------------------
+Un APK modificato ha una firma diversa dall'originale, e Android non permette
+di installarlo sopra quello che hai gia': dovrai DISINSTALLARE il gioco.
+
+Disinstallando sparisce anche la memoria locale dell'app, che e' dove il
+gioco tiene il tuo "documento d'identita'". Al reinstallo il server non ti
+riconosce e ti fa ricominciare da zero.
+
+Il personaggio non e' perduto: vive nel database del server, non nel
+telefono. Ma per riprenderlo TI SERVE IL CODICE DI TRASFERIMENTO, e va
+impostato PRIMA di disinstallare.
+
+Quindi, nell'ordine:
+  1. apri il gioco che hai adesso
+  2. imposta il trasferimento account e annota codice e password
+  3. scrivili da qualche parte che NON sia il telefono
+  4. solo allora disinstalla
+
+Se salti questo passaggio, il personaggio resta nel database ma senza modo
+di riagganciarlo. Chi gestisce il server puo' rimediare, tu da solo no.
+
+
+COME SI USA
+-----------
+  1. Avvia MhxrPatcher.exe
+
+     Windows mostrera' "Windows ha protetto il PC". E' normale: succede a
+     ogni programma non firmato con un certificato a pagamento.
+     Clicca "Ulteriori informazioni", poi "Esegui comunque".
+
+     Puo' capitare anche che l'antivirus lo metta in quarantena. E' un falso
+     positivo: un programma che apre e riscrive file APK assomiglia, per le
+     regole automatiche di un antivirus, a qualcosa di sospetto. Se succede,
+     aggiungi un'esclusione sulla cartella dove l'hai messo.
+
+  2. Pulsante "Sfoglia" - scegli il tuo file APK del gioco
+
+  3. Indirizzo del server - scrivi quello che ti ha dato chi gestisce il
+     server. Massimo 47 caratteri: non e' una scelta nostra, e' lo spazio
+     fisico disponibile dentro il gioco. Il contatore accanto te lo dice.
+
+  4. Spunta "Metti il gioco in inglese" se lo vuoi tradotto.
+     La traduzione e' parziale: per ora i nomi dei mostri, il resto resta in
+     giapponese. Se non spunti niente, i testi non vengono toccati.
+
+  5. Pulsante "Crea e salva l'APK" - scegli dove salvarlo sul PC
+
+  6. Copia il file sul telefono e installalo.
+     Dovrai permettere l'installazione da fonti sconosciute: e' il telefono
+     che chiede conferma perche' il file non viene dal Play Store.
+
+  7. Apri il gioco e usa il trasferimento account con il codice e la
+     password che avevi annotato al punto precedente.
+
+
+SE QUALCOSA NON VA
+------------------
+"java not found" / "keytool not found"
+    Hai installato il JRE invece del JDK. Vedi sopra.
+    Se sei sicuro di avere il JDK, riavvia il PC: l'installazione aggiunge
+    Java al sistema ma i programmi gia' aperti non se ne accorgono.
+
+"The address is N characters long but the slot only fits 47"
+    L'indirizzo e' troppo lungo. Chiedi a chi gestisce il server se ne ha
+    uno piu' corto.
+
+"no address found"
+    Il file scelto non e' l'APK del gioco, oppure e' una versione diversa da
+    quelle conosciute.
+
+L'APK non si installa
+    Quasi sempre e' il gioco vecchio ancora presente: disinstallalo prima
+    (ma ricordati del codice di trasferimento).
+
+Il gioco si apre e si chiude subito, senza nessun messaggio
+    Hai usato la versione Taiwan. Funziona solo la versione giapponese, vedi
+    "ATTENZIONE AL PUNTO 3" piu' sopra.
+
+Il gioco si apre ma non si collega
+    L'indirizzo del server e' sbagliato, oppure il server e' spento.
+    Verifica con chi lo gestisce.

@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- net9 e non net10: il runtime desktop piu' recente in circolazione e' il 9 -->
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>MhxrPatcher</AssemblyName>
+    <Version>1.0.0</Version>
+    <!-- Icona del file .exe (quella che si vede in Esplora risorse e nella
+         barra delle applicazioni). Il PNG originale e' stato convertito in
+         .ico con le 7 risoluzioni standard (16-256px). -->
+    <ApplicationIcon>app.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <!-- Impostazioni per la pubblicazione "autonoma": un solo .exe che contiene
+       anche il .NET, cosi' chi lo scarica non deve installare niente a parte
+       il JDK di Java (che serve per firmare l'APK). -->
+  <PropertyGroup>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <!-- Il taglio del codice inutilizzato NON va attivato: WinForms costruisce
+         le finestre per riflessione e il trimming rimuoverebbe pezzi che
+         servono, con errori che compaiono solo a programma avviato. -->
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- I testi tradotti viaggiano dentro l'eseguibile: un file solo da
+         scaricare, niente cartelle da tenere insieme. -->
+    <EmbeddedResource Include="GUI_msg_en.arc" LogicalName="MhxrPatcher.GUI_msg_en.arc" />
+    <!-- apksigner.jar (da Android SDK build-tools, strumento ufficiale
+         Google): firma con schema v2/v3, non solo v1/jarsigner. Incorporato
+         per lo stesso motivo dei testi: un file solo, l'utente non deve
+         installare l'SDK Android, gli basta il JDK che gli serve gia'. -->
+    <EmbeddedResource Include="apksigner.jar" LogicalName="MhxrPatcher.apksigner.jar" />
+    <!-- Sfondo della finestra: gia' preparato a bassa opacita' (sfondo
+         trasparente, drago sbiadito), non va rischiarito ulteriormente a
+         runtime. -->
+    <EmbeddedResource Include="sfondo.png" LogicalName="MhxrPatcher.sfondo.png" />
+  </ItemGroup>
+
+</Project>
