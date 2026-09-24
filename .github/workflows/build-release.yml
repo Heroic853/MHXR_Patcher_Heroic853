@@ -1,0 +1,44 @@
+name: Compila e pubblica MhxrPatcher
+
+# Gira sui server di GitHub, non sul PC di chi lavora al codice: a ogni
+# aggiornamento di main produce un .exe pronto e lo mette in una release
+# "latest" sempre aggiornata, cosi' chi scarica il programma non deve
+# saper compilare ne' installare Visual Studio.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Pubblica (self-contained, file singolo)
+        run: >
+          dotnet publish MhxrPatcher.csproj -c Release -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:PublishTrimmed=false
+          -o publish
+
+      - name: Pubblica la release "latest"
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: MhxrPatcher (ultima build)
+          body: >
+            Build automatica dall'ultimo commit su main. Scarica
+            MhxrPatcher.exe e avvialo — non serve installare nient'altro a
+            parte il JDK (vedi ISTRUZIONI-UTENTI.txt).
+          files: publish/MhxrPatcher.exe
+          prerelease: false
