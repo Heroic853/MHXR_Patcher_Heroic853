@@ -1,10 +1,11 @@
+using System.Text;
+
 namespace MhxrPatcher;
 
 public class Form1 : Form
 {
     private readonly TextBox _percorsoApk = new();
     private readonly TextBox _indirizzo = new();
-    private readonly Label _contatore = new();
     private readonly CheckBox _cambiaIndirizzo = new();
     private readonly CheckBox _cambiaLingua = new();
     private readonly Button _crea = new();
@@ -17,7 +18,17 @@ public class Form1 : Form
     // scriverlo, lo decide il programma. Il campo in UI mostra solo una
     // versione mascherata (ultimi 4 caratteri, il resto pallini) cosi' non
     // finisce leggibile in uno screenshot condiviso in giro.
-    private string _indirizzoReale = "http://mhxr.duckdns.org/";
+    //
+    // NON e' tenuto come stringa letterale nel sorgente: e' codificato in
+    // Base64 e ricostruito qui sotto. Questo NON e' vera sicurezza — chiunque
+    // apra l'exe in un decompilatore vero (dnSpy, ILSpy) vede comunque il
+    // valore decodificato appena il programma lo usa, ed e' un fatto della
+    // piattaforma .NET, non qualcosa che si possa evitare del tutto senza un
+    // offuscatore serio (es. ConfuserEx) sull'intero eseguibile. Questo passo
+    // alza solo l'asticella per chi aprisse l'exe con un editor di testo o
+    // "strings.exe" e cercasse l'indirizzo cosi' com'e', a colpo d'occhio.
+    private static readonly string _indirizzoReale =
+        Encoding.UTF8.GetString(Convert.FromBase64String("aHR0cDovL21oeHIuZHVja2Rucy5vcmcv"));
 
     public Form1()
     {
@@ -76,15 +87,7 @@ public class Form1 : Form
         _indirizzo.ReadOnly = true;
         _indirizzo.Text = MaschermaIndirizzo(_indirizzoReale);
         Controls.Add(_indirizzo);
-
-        _contatore.SetBounds(450, y + 3, 230, 20);
-        Controls.Add(_contatore);
-        y += 30;
-
-        Controls.Add(Etichetta(
-            $"Maximum {MaxCaratteri} characters: that's the physical space inside the game's library, not our choice.",
-            38, y, false, SystemColors.GrayText));
-        y += 36;
+        y += 34;
 
         // --- 3. lingua ------------------------------------------------------
         _cambiaLingua.SetBounds(18, y, 420, 22);
@@ -115,7 +118,6 @@ public class Form1 : Form
         _log.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
         Controls.Add(_log);
 
-        AggiornaContatore();
         AggiornaStato();
         ControllaJava();
     }
@@ -150,14 +152,6 @@ public class Form1 : Form
             Scrivi("Without Java the APK is created but NOT signed, and Android will refuse to install it.");
             Scrivi("Install Java (adoptium.net) and reopen this program.");
         }
-    }
-
-    private void AggiornaContatore()
-    {
-        var n = _indirizzoReale.Trim().Length;
-        _contatore.Text = $"{n} / {MaxCaratteri} characters";
-        _contatore.ForeColor = n > MaxCaratteri ? Color.Firebrick : SystemColors.GrayText;
-        AggiornaStato();
     }
 
     private void AggiornaStato()
