@@ -20,7 +20,7 @@ static class Program
 
     private static int DaRigaDiComando(string[] args)
     {
-        string? ingresso = null, uscita = null, url = null;
+        string? ingresso = null, uscita = null, url = null, urlVecchio = null;
         bool inglese = false, firma = true;
 
         foreach (var a in args)
@@ -28,6 +28,7 @@ static class Program
             if (a.StartsWith("--apk=")) ingresso = a[6..];
             else if (a.StartsWith("--out=")) uscita = a[6..];
             else if (a.StartsWith("--url=")) url = a[6..];
+            else if (a.StartsWith("--url-vecchio=")) urlVecchio = a[14..];
             else if (a == "--inglese") inglese = true;
             else if (a == "--senza-firma") firma = false;
             else if (a is "--aiuto" or "-h" or "--help") { Aiuto(); return 0; }
@@ -56,7 +57,7 @@ static class Program
             testi = mem.ToArray();
         }
 
-        var esito = Patcher.Costruisci(ingresso, uscita, url, testi);
+        var esito = Patcher.Costruisci(ingresso, uscita, url, testi, urlVecchio);
         foreach (var r in esito.Righe) Console.WriteLine("  " + r);
         if (!esito.Riuscito) return 1;
 
@@ -82,6 +83,7 @@ static class Program
         Console.WriteLine("  --apk=<file>     starting APK              (required)");
         Console.WriteLine("  --out=<file>     APK to create             (required)");
         Console.WriteLine("  --url=<url>      new server address        (max 47 characters)");
+        Console.WriteLine("  --url-vecchio=<url>  replace THIS exact existing address instead of guessing the slot");
         Console.WriteLine("  --inglese        replaces the texts with the translated ones");
         Console.WriteLine("  --senza-firma    don't sign (the APK won't install)");
         Console.WriteLine();
