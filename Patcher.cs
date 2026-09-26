@@ -273,9 +273,15 @@ public static class Patcher
 
     /// <summary>
     /// Costruisce l'APK modificato. `nuovoUrl` null = non toccare l'indirizzo;
-    /// `testiInglese` null = non toccare la lingua.
+    /// `testiInglese` null = non toccare la lingua. `urlVecchio`, se dato,
+    /// sceglie lo slot per corrispondenza ESATTA con l'indirizzo che contiene
+    /// oggi, invece di indovinare con l'euristica IP/dimensione — serve per
+    /// un APK gia' patchata in precedenza, dove lo slot giusto non e' piu'
+    /// per forza quello con lo spazio piu' grande o con la forma di un IP
+    /// (scoperto un caso vero: uno slot IP inutilizzato aveva piu' spazio
+    /// libero dello slot col dominio che il gioco usava davvero).
     /// </summary>
-    public static Esito Costruisci(string apkIngresso, string apkUscita, string? nuovoUrl, byte[]? testiInglese)
+    public static Esito Costruisci(string apkIngresso, string apkUscita, string? nuovoUrl, byte[]? testiInglese, string? urlVecchio = null)
     {
         var log = new List<string>();
         try
@@ -340,7 +346,8 @@ public static class Patcher
                         var candidati = TrovaUrl(contenuto, voce.FullName);
                         var conIp = candidati.Where(x => System.Text.RegularExpressions.Regex.IsMatch(
                             x.UrlAttuale, @"^https?://\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"));
-                        var slot = conIp.OrderByDescending(x => x.SpazioMax).FirstOrDefault()
+                        var slot = (urlVecchio != null ? candidati.FirstOrDefault(x => x.UrlAttuale == urlVecchio) : null)
+                            ?? conIp.OrderByDescending(x => x.SpazioMax).FirstOrDefault()
                             ?? candidati.OrderByDescending(x => x.SpazioMax).FirstOrDefault();
                         if (slot == null)
                         {
