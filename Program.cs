@@ -21,7 +21,7 @@ static class Program
     private static int DaRigaDiComando(string[] args)
     {
         string? ingresso = null, uscita = null, url = null, urlVecchio = null;
-        bool inglese = false, firma = true;
+        bool inglese = false, firma = true, controllaManifest = true;
 
         foreach (var a in args)
         {
@@ -31,6 +31,7 @@ static class Program
             else if (a.StartsWith("--url-vecchio=")) urlVecchio = a[14..];
             else if (a == "--inglese") inglese = true;
             else if (a == "--senza-firma") firma = false;
+            else if (a == "--senza-manifest") controllaManifest = false;
             else if (a is "--aiuto" or "-h" or "--help") { Aiuto(); return 0; }
             else { Console.Error.WriteLine($"Unknown argument: {a}"); Aiuto(); return 2; }
         }
@@ -57,22 +58,43 @@ static class Program
             testi = mem.ToArray();
         }
 
-        var esito = Patcher.Costruisci(ingresso, uscita, url, testi, urlVecchio);
-        foreach (var r in esito.Righe) Console.WriteLine("  " + r);
-        if (!esito.Riuscito) return 1;
-
-        if (firma)
+        var ingressoEffettivo = ingresso;
+        var copiaTemporanea = (string?)null;
+        if (controllaManifest && url != null)
         {
-            if (!Firma.JavaDisponibile)
-            {
-                Console.WriteLine("  Java not found: APK NOT signed, the phone will refuse it.");
-                return 4;
-            }
-            var (ok, messaggio) = Firma.FirmaApk(uscita);
-            Console.WriteLine("  " + messaggio);
-            if (!ok) return 5;
+            copiaTemporanea = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".apk");
+            File.Copy(ingresso, copiaTemporanea, overwrite: true);
+            var esitoManifest = ManifestFix.AssicuraCleartextTraffic(copiaTemporanea);
+            Console.WriteLine("  manifest: " + esitoManifest.Messaggio);
+            if (!esitoManifest.Riuscito)
+                Console.WriteLine("  WARNING: proceeding with the original APK's manifest — if it lacks cleartext permission, the patched game may never connect.");
+            else
+                ingressoEffettivo = copiaTemporanea;
         }
-        return 0;
+
+        try
+        {
+            var esito = Patcher.Costruisci(ingressoEffettivo, uscita, url, testi, urlVecchio);
+            foreach (var r in esito.Righe) Console.WriteLine("  " + r);
+            if (!esito.Riuscito) return 1;
+
+            if (firma)
+            {
+                if (!Firma.JavaDisponibile)
+                {
+                    Console.WriteLine("  Java not found: APK NOT signed, the phone will refuse it.");
+                    return 4;
+                }
+                var (ok, messaggio) = Firma.FirmaApk(uscita);
+                Console.WriteLine("  " + messaggio);
+                if (!ok) return 5;
+            }
+            return 0;
+        }
+        finally
+        {
+            if (copiaTemporanea != null) { try { File.Delete(copiaTemporanea); } catch { /* temporanea, non bloccante */ } }
+        }
     }
 
     private static void Aiuto()
@@ -86,6 +108,7 @@ static class Program
         Console.WriteLine("  --url-vecchio=<url>  replace THIS exact existing address instead of guessing the slot");
         Console.WriteLine("  --inglese        replaces the texts with the translated ones");
         Console.WriteLine("  --senza-firma    don't sign (the APK won't install)");
+        Console.WriteLine("  --senza-manifest skip the cleartext-traffic manifest check/fix (faster, riskier)");
         Console.WriteLine();
     }
 }

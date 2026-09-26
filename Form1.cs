@@ -221,13 +221,28 @@ public class Form1 : Form
 
         _crea.Enabled = false;
         Cursor = Cursors.WaitCursor;
+        string? copiaTemporanea = null;
         try
         {
             Scrivi("");
             Scrivi("--- start ---");
 
             var url = _cambiaIndirizzo.Checked ? _indirizzoReale.Trim() : null;
-            var esito = Patcher.Costruisci(_percorsoApk.Text, salva.FileName, url, testi);
+            var ingresso = _percorsoApk.Text;
+
+            if (url != null)
+            {
+                Scrivi("  checking the manifest for the cleartext-traffic permission (can take a minute)...");
+                Application.DoEvents();
+                copiaTemporanea = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".apk");
+                File.Copy(ingresso, copiaTemporanea, overwrite: true);
+                var esitoManifest = ManifestFix.AssicuraCleartextTraffic(copiaTemporanea);
+                Scrivi("  manifest: " + esitoManifest.Messaggio);
+                if (esitoManifest.Riuscito) ingresso = copiaTemporanea;
+                else Scrivi("  WARNING: couldn't check/fix the manifest — if the source APK lacks the cleartext permission, the game may never connect.");
+            }
+
+            var esito = Patcher.Costruisci(ingresso, salva.FileName, url, testi);
             foreach (var r in esito.Righe) Scrivi("  " + r);
 
             if (!esito.Riuscito)
@@ -264,6 +279,7 @@ public class Form1 : Form
         }
         finally
         {
+            if (copiaTemporanea != null) { try { File.Delete(copiaTemporanea); } catch { /* temporanea, non bloccante */ } }
             Cursor = Cursors.Default;
             _crea.Enabled = true;
             AggiornaStato();
