@@ -327,27 +327,36 @@ public static class Patcher
                     if (nuovoUrl != null && voce.FullName.EndsWith("libMHS.so", StringComparison.OrdinalIgnoreCase))
                     {
                         /*
-                         * Non piu' "prendi lo slot piu' grande": su un APK
-                         * vero (Taiwan, arm64-v8a) questo aveva scelto
-                         * "mhxrres.capcom.com.tw" (30 caratteri liberi, un
-                         * server di RISORSE, non di gioco) al posto di
-                         * "203.191.249.158:13000" (29 caratteri, lo stesso
-                         * indirizzo IP gia' verificato come server vero su
-                         * PIU' build diverse del gioco, armeabi-v7a compreso)
-                         * — sbagliato per un solo carattere di margine.
+                         * Storia di questa scelta, per non ripetere gli stessi errori:
                          *
-                         * Un indirizzo IP e' un candidato molto piu' solido
-                         * di un nome a dominio in questi slot: i nomi a
-                         * dominio nella libreria sono quasi sempre server
-                         * accessori (risorse, test, staging), mentre il
-                         * server di gioco vero e proprio e' stato trovato
-                         * come IP grezzo su ogni build controllata finora.
+                         * 1) "Prendi lo slot piu' grande" — su un APK Taiwan (non
+                         *    supportata comunque, vedi l'avviso rosso in UI) aveva
+                         *    scelto "mhxrres.capcom.com.tw" (30 caratteri liberi, un
+                         *    server di risorse) invece di "203.191.249.158:13000"
+                         *    (29 caratteri, il vero server) — sbagliato per un solo
+                         *    carattere.
+                         *
+                         * 2) Per questo si era passati a "preferisci chi sembra un
+                         *    IP": ma sulla APK JP vera e propria (quella distribuita,
+                         *    verificata di persona su device reale) lo slot VERO e'
+                         *    invece quello con un dominio (54 caratteri su arm64-v8a,
+                         *    47 su armeabi-v7a — stessi numeri gia' documentati fin
+                         *    dall'inizio del progetto), sempre piu' grande del falso
+                         *    positivo IP (29/31). Preferire l'IP a prescindere
+                         *    significava patchare sempre lo slot sbagliato su
+                         *    QUESTA APK — bug vero, causa di connessioni che
+                         *    sembravano riuscite (nessun errore nel log) ma non
+                         *    funzionavano mai.
+                         *
+                         * Tornati quindi a "il piu' grande vince", che sulla APK JP
+                         * reale sceglie giusto (54/47 batte 29/31 con ampio margine,
+                         * non per un carattere) e su un APK mai patchata prima (dove
+                         * l'unico candidato reale e' proprio quello IP) non cambia
+                         * nulla. Il caso Taiwan resta scoperto, ma quella build non
+                         * e' comunque supportata.
                          */
                         var candidati = TrovaUrl(contenuto, voce.FullName);
-                        var conIp = candidati.Where(x => System.Text.RegularExpressions.Regex.IsMatch(
-                            x.UrlAttuale, @"^https?://\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"));
                         var slot = (urlVecchio != null ? candidati.FirstOrDefault(x => x.UrlAttuale == urlVecchio) : null)
-                            ?? conIp.OrderByDescending(x => x.SpazioMax).FirstOrDefault()
                             ?? candidati.OrderByDescending(x => x.SpazioMax).FirstOrDefault();
                         if (slot == null)
                         {
