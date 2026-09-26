@@ -349,7 +349,9 @@ public static class Patcher
                         else
                         {
                             ScriviUrl(contenuto, slot, nuovoUrl);
-                            log.Add($"address: {voce.FullName} — \"{slot.UrlAttuale}\" -> \"{nuovoUrl}\" (room for {slot.SpazioMax})");
+                            // Niente indirizzi nel log, ne' il vecchio ne' il nuovo: e' testo che
+                            // finisce facilmente in uno screenshot condiviso in giro.
+                            log.Add($"address patched in {voce.FullName} (room for {slot.SpazioMax})");
                         }
                     }
 
