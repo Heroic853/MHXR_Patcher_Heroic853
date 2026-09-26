@@ -13,6 +13,12 @@ public class Form1 : Form
     // Lo slot piu' piccolo fra le due architetture: e' quello che comanda.
     private const int MaxCaratteri = 47;
 
+    // L'indirizzo vero, usato davvero per patchare: non e' piu' l'utente a
+    // scriverlo, lo decide il programma. Il campo in UI mostra solo una
+    // versione mascherata (ultimi 4 caratteri, il resto pallini) cosi' non
+    // finisce leggibile in uno screenshot condiviso in giro.
+    private string _indirizzoReale = "http://mhxr.duckdns.org/";
+
     public Form1()
     {
         // L'icona del file .exe (ApplicationIcon nel .csproj) non diventa da
@@ -67,8 +73,8 @@ public class Form1 : Form
         y += 26;
 
         _indirizzo.SetBounds(38, y, 400, 24);
-        _indirizzo.Text = "http://mhxr.duckdns.org/";
-        _indirizzo.TextChanged += (_, _) => AggiornaContatore();
+        _indirizzo.ReadOnly = true;
+        _indirizzo.Text = MaschermaIndirizzo(_indirizzoReale);
         Controls.Add(_indirizzo);
 
         _contatore.SetBounds(450, y + 3, 230, 20);
@@ -124,6 +130,14 @@ public class Form1 : Form
 
     private void Scrivi(string riga) => _log.AppendText(riga + Environment.NewLine);
 
+    /// <summary>Ultimi 4 caratteri veri, il resto sostituito da pallini — stessa lunghezza dell'originale.</summary>
+    private static string MaschermaIndirizzo(string reale)
+    {
+        const int visibili = 4;
+        if (reale.Length <= visibili) return reale;
+        return new string('•', reale.Length - visibili) + reale[^visibili..];
+    }
+
     private void ControllaJava()
     {
         if (Firma.JavaDisponibile)
@@ -140,7 +154,7 @@ public class Form1 : Form
 
     private void AggiornaContatore()
     {
-        var n = _indirizzo.Text.Trim().Length;
+        var n = _indirizzoReale.Trim().Length;
         _contatore.Text = $"{n} / {MaxCaratteri} characters";
         _contatore.ForeColor = n > MaxCaratteri ? Color.Firebrick : SystemColors.GrayText;
         AggiornaStato();
@@ -152,7 +166,7 @@ public class Form1 : Form
 
         var apkOk = File.Exists(_percorsoApk.Text);
         var indirizzoOk = !_cambiaIndirizzo.Checked
-                          || (_indirizzo.Text.Trim().Length is > 0 and <= MaxCaratteri);
+                          || (_indirizzoReale.Trim().Length is > 0 and <= MaxCaratteri);
         var qualcosaDaFare = _cambiaIndirizzo.Checked || _cambiaLingua.Checked;
 
         _crea.Enabled = apkOk && indirizzoOk && qualcosaDaFare;
@@ -213,7 +227,7 @@ public class Form1 : Form
             Scrivi("");
             Scrivi("--- start ---");
 
-            var url = _cambiaIndirizzo.Checked ? _indirizzo.Text.Trim() : null;
+            var url = _cambiaIndirizzo.Checked ? _indirizzoReale.Trim() : null;
             var esito = Patcher.Costruisci(_percorsoApk.Text, salva.FileName, url, testi);
             foreach (var r in esito.Righe) Scrivi("  " + r);
 
