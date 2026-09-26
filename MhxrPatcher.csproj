@@ -38,6 +38,20 @@
          per lo stesso motivo dei testi: un file solo, l'utente non deve
          installare l'SDK Android, gli basta il JDK che gli serve gia'. -->
     <EmbeddedResource Include="apksigner.jar" LogicalName="MhxrPatcher.apksigner.jar" />
+    <!-- apktool (da iBotPeaches/Apktool, licenza Apache 2.0): serve solo per
+         aggiungere android:usesCleartextTraffic="true" al manifest quando
+         manca (scoperto vero su un APK scaricata da APKPure: senza quel
+         permesso Android 9+ blocca ogni richiesta HTTP in chiaro, a
+         prescindere da quale indirizzo sia scritto in libMHS.so — il gioco
+         non manda mai un solo pacchetto). Non e' un'operazione che si possa
+         fare con un find-and-replace di byte come per l'indirizzo: il
+         manifest e' XML binario, serve decodificarlo e ricostruirlo davvero. -->
+    <EmbeddedResource Include="apktool.jar" LogicalName="MhxrPatcher.apktool.jar" />
+    <!-- Risorse della piattaforma Android (framework 1.apk) che apktool
+         normalmente scarica da solo al primo utilizzo: incorporata anche
+         questa cosi' il decode del manifest funziona anche offline, o su un
+         PC dietro un firewall che blocca il download automatico. -->
+    <EmbeddedResource Include="apktool-framework.apk" LogicalName="MhxrPatcher.apktool-framework.apk" />
     <!-- Sfondo della finestra: gia' preparato a bassa opacita' (sfondo
          trasparente, drago sbiadito), non va rischiarito ulteriormente a
          runtime. -->
