@@ -55,7 +55,7 @@ public class Form1 : Form
 
         Text = "MHXR Patcher";
         Width = 720;
-        Height = 560;
+        Height = 500; // 60 in meno: la sezione indirizzo non c'e' piu'
         StartPosition = FormStartPosition.CenterScreen;
         Font = new Font("Segoe UI", 9F);
 
@@ -79,25 +79,34 @@ public class Form1 : Form
             18, y, false, Color.Firebrick));
         y += 32;
 
-        // --- 2. indirizzo ---------------------------------------------------
-        _cambiaIndirizzo.SetBounds(18, y, 320, 22);
-        _cambiaIndirizzo.Text = "2.  Change the server address";
-        _cambiaIndirizzo.Font = new Font(Font, FontStyle.Bold);
-        _cambiaIndirizzo.Checked = true;
-        _cambiaIndirizzo.CheckedChanged += (_, _) => AggiornaStato();
-        Controls.Add(_cambiaIndirizzo);
-        y += 26;
+        // --- indirizzo: DISATTIVATO -----------------------------------------
+        // Il patch dell'indirizzo del server e' spento: il programma fa solo la
+        // traduzione in inglese. Il codice resta qui commentato (e il resto della
+        // logica e' intatto: con _cambiaIndirizzo mai spuntata, url resta null e
+        // Patcher.Costruisci non tocca l'indirizzo). Per riattivarlo basta
+        // togliere i commenti qui sotto e rinumerare i passi.
+        //
+        // _cambiaIndirizzo.SetBounds(18, y, 320, 22);
+        // _cambiaIndirizzo.Text = "2.  Change the server address";
+        // _cambiaIndirizzo.Font = new Font(Font, FontStyle.Bold);
+        // _cambiaIndirizzo.Checked = true;
+        // _cambiaIndirizzo.CheckedChanged += (_, _) => AggiornaStato();
+        // Controls.Add(_cambiaIndirizzo);
+        // y += 26;
+        //
+        // _indirizzo.SetBounds(38, y, 400, 24);
+        // _indirizzo.ReadOnly = true;
+        // _indirizzo.Text = MaschermaIndirizzo(_indirizzoReale);
+        // Controls.Add(_indirizzo);
+        // y += 34;
+        _cambiaIndirizzo.Checked = false;
 
-        _indirizzo.SetBounds(38, y, 400, 24);
-        _indirizzo.ReadOnly = true;
-        _indirizzo.Text = MaschermaIndirizzo(_indirizzoReale);
-        Controls.Add(_indirizzo);
-        y += 34;
-
-        // --- 3. lingua ------------------------------------------------------
+        // --- 2. lingua ------------------------------------------------------
         _cambiaLingua.SetBounds(18, y, 420, 22);
-        _cambiaLingua.Text = "3.  Switch the game to English";
+        _cambiaLingua.Text = "2.  Switch the game to English";
         _cambiaLingua.Font = new Font(Font, FontStyle.Bold);
+        // Unica operazione rimasta: spuntata di default.
+        _cambiaLingua.Checked = true;
         _cambiaLingua.CheckedChanged += (_, _) => AggiornaStato();
         Controls.Add(_cambiaLingua);
         y += 26;
@@ -107,9 +116,9 @@ public class Form1 : Form
             38, y, false, SystemColors.GrayText));
         y += 40;
 
-        // --- 4. crea --------------------------------------------------------
+        // --- 3. crea --------------------------------------------------------
         _crea.SetBounds(18, y, 250, 36);
-        _crea.Text = "4.  Create and save the APK";
+        _crea.Text = "3.  Create and save the APK";
         _crea.Font = new Font(Font, FontStyle.Bold);
         _crea.Click += (_, _) => Crea();
         Controls.Add(_crea);

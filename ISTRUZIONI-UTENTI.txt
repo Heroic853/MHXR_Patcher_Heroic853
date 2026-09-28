@@ -6,10 +6,10 @@ A COSA SERVE
 ------------
 Monster Hunter Explore e' stato chiuso, e il gioco cerca ancora i server
 Capcom che non esistono piu'. Questo programma prende la TUA copia del gioco
-e le cambia due cose:
+e ne mette i testi in inglese (traduzione parziale).
 
-  - l'indirizzo del server, per farla puntare a un server privato
-  - la lingua dei testi, per metterla in inglese (traduzione parziale)
+Il programma NON cambia piu' l'indirizzo del server: parti da un APK che
+punta gia' al server privato (quello distribuito da chi gestisce il server).
 
 IMPORTANTE: il programma NON contiene il gioco e non lo scarica. Devi avere
 gia' il tuo file APK. Se non ce l'hai, questo strumento non ti serve a niente.
@@ -87,23 +87,18 @@ COME SI USA
 
   3. Pulsante "Sfoglia" - scegli il tuo file APK del gioco
 
-  4. Indirizzo del server - scrivi quello che ti ha dato chi gestisce il
-     server. Massimo 47 caratteri: non e' una scelta nostra, e' lo spazio
-     fisico disponibile dentro il gioco. Il contatore accanto te lo dice.
-
-  5. Spunta "Metti il gioco in inglese" se lo vuoi tradotto.
+  4. "Switch the game to English" e' gia' spuntato.
      La traduzione e' parziale: mostri, menu, messaggi comuni/di errore e
      abilita' (nomi e testi). Restano in giapponese soprattutto i nomi di armi
-     e armature e i testi delle quest. Se non spunti niente, i testi non
-     vengono toccati.
+     e armature e i testi delle quest.
 
-  6. Pulsante "Crea e salva l'APK" - scegli dove salvarlo sul PC
+  5. Pulsante "Create and save the APK" - scegli dove salvarlo sul PC
 
-  7. Copia il file sul telefono e installalo.
+  6. Copia il file sul telefono e installalo.
      Dovrai permettere l'installazione da fonti sconosciute: e' il telefono
      che chiede conferma perche' il file non viene dal Play Store.
 
-  8. Apri il gioco e usa il trasferimento account con il codice e la
+  7. Apri il gioco e usa il trasferimento account con il codice e la
      password che avevi annotato al punto precedente.
 
 
@@ -114,14 +109,6 @@ SE QUALCOSA NON VA
     Se sei sicuro di avere il JDK, riavvia il PC: l'installazione aggiunge
     Java al sistema ma i programmi gia' aperti non se ne accorgono.
 
-"The address is N characters long but the slot only fits 47"
-    L'indirizzo e' troppo lungo. Chiedi a chi gestisce il server se ne ha
-    uno piu' corto.
-
-"no address found"
-    Il file scelto non e' l'APK del gioco, oppure e' una versione diversa da
-    quelle conosciute.
-
 L'APK non si installa
     Quasi sempre e' il gioco vecchio ancora presente: disinstallalo prima
     (ma ricordati del codice di trasferimento).
@@ -131,5 +118,5 @@ Il gioco si apre e si chiude subito, senza nessun messaggio
     "ATTENZIONE AL PUNTO 3" piu' sopra.
 
 Il gioco si apre ma non si collega
-    L'indirizzo del server e' sbagliato, oppure il server e' spento.
-    Verifica con chi lo gestisce.
+    Hai patchato un APK originale che punta ancora ai server Capcom, oppure
+    il server e' spento. Usa l'APK distribuito da chi gestisce il server.
