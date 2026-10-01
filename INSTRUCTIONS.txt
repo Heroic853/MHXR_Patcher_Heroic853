@@ -70,6 +70,18 @@ STEP 3 - PATCH
      translation included.
 
 
+ON THE PHONE (no PC needed)
+---------------------------
+  1. On the phone, download the original Japanese APK (step 1 above).
+  2. Download MhxrPatcher.apk from the releases page of this project and install it
+     (allow "install unknown apps" for your browser when Android asks).
+  3. Open MHXR Patcher: "Choose the Japanese APK", then "Create the patched APK"
+     (it takes a minute), then "Install". The first time Android asks to allow
+     MHXR Patcher to install apps: allow it and press Install again.
+  4. Same as on PC: set up the transfer code and uninstall the old game first.
+  Nothing else to download: no Java, no PC.
+
+
 TROUBLESHOOTING
 ---------------
 "Java not found"
