@@ -1,50 +1,27 @@
-using System.Text;
-
 namespace MhxrPatcher;
 
+/// <summary>
+/// Finestra del patcher: si sceglie l'APK giapponese originale e si crea quello
+/// patchato. Il programma fa sempre e solo le due cose che servono per giocare sul
+/// server privato:
+///   - scrive l'indirizzo del server in libMHS.so (entrambe le architetture);
+///   - aggiunge al manifest il permesso per il traffico HTTP in chiaro, se manca.
+/// La traduzione inglese non e' piu' qui dentro: la scarica il gioco dal server,
+/// con gli aggiornamenti delle risorse.
+/// </summary>
 public class Form1 : Form
 {
     private readonly TextBox _percorsoApk = new();
-    private readonly TextBox _indirizzo = new();
-    private readonly CheckBox _cambiaIndirizzo = new();
-    private readonly CheckBox _cambiaLingua = new();
     private readonly Button _crea = new();
     private readonly TextBox _log = new();
-
-    // Lo slot piu' piccolo fra le due architetture: e' quello che comanda.
-    private const int MaxCaratteri = 47;
-
-    // L'indirizzo vero, usato davvero per patchare: non e' piu' l'utente a
-    // scriverlo, lo decide il programma. Il campo in UI mostra solo una
-    // versione mascherata (ultimi 4 caratteri, il resto pallini) cosi' non
-    // finisce leggibile in uno screenshot condiviso in giro.
-    //
-    // NON e' tenuto come stringa letterale nel sorgente: e' codificato in
-    // Base64 e ricostruito qui sotto. Questo NON e' vera sicurezza — chiunque
-    // apra l'exe in un decompilatore vero (dnSpy, ILSpy) vede comunque il
-    // valore decodificato appena il programma lo usa, ed e' un fatto della
-    // piattaforma .NET, non qualcosa che si possa evitare del tutto senza un
-    // offuscatore serio (es. ConfuserEx) sull'intero eseguibile. Questo passo
-    // alza solo l'asticella per chi aprisse l'exe con un editor di testo o
-    // "strings.exe" e cercasse l'indirizzo cosi' com'e', a colpo d'occhio.
-    // IP fisso della VPS, non un dominio: niente piu' *.duckdns.org, che alcuni
-    // operatori telefonici filtrano per categoria "dynamic DNS" a prescindere
-    // dal sottodominio (verificato: l'IP nudo passava, qualunque nome
-    // *.duckdns.org no). L'IP della VPS e' statico, non cambia da solo — se un
-    // giorno cambiasse VPS, questo valore va aggiornato qui e ripubblicato.
-    private static readonly string _indirizzoReale =
-        Encoding.UTF8.GetString(Convert.FromBase64String("aHR0cDovLzU3LjEzMS4xOTMuMjQ0Lw=="));
 
     public Form1()
     {
         // L'icona del file .exe (ApplicationIcon nel .csproj) non diventa da
-        // sola quella della finestra: va assegnata qui, altrimenti la
-        // titlebar mostra l'icona generica di WinForms anche con l'exe giusto.
+        // sola quella della finestra: va assegnata qui.
         try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { /* nessuna icona, non e' bloccante */ }
 
-        // Sfondo: un'immagine incorporata (stesso motivo di GUI_msg_en.arc/
-        // apksigner.jar, un file solo da distribuire) gia' preparata a bassa
-        // opacita' — qui non si tocca la trasparenza, e' gia' nel PNG.
+        // Sfondo: immagine incorporata, gia' preparata a bassa opacita'.
         try
         {
             using var s = typeof(Form1).Assembly.GetManifestResourceStream("MhxrPatcher.sfondo.png");
@@ -55,14 +32,14 @@ public class Form1 : Form
 
         Text = "MHXR Patcher";
         Width = 720;
-        Height = 500; // 60 in meno: la sezione indirizzo non c'e' piu'
+        Height = 480;
         StartPosition = FormStartPosition.CenterScreen;
         Font = new Font("Segoe UI", 9F);
 
         var y = 18;
 
         // --- 1. APK ---------------------------------------------------------
-        Controls.Add(Etichetta("1.  Choose the game's APK", 18, y, true));
+        Controls.Add(Etichetta("1.  Choose the original Japanese APK of the game", 18, y, true));
         y += 26;
         _percorsoApk.SetBounds(18, y, 540, 24);
         _percorsoApk.ReadOnly = true;
@@ -72,59 +49,27 @@ public class Form1 : Form
         var sfoglia = new Button { Text = "Browse...", Left = 568, Top = y - 1, Width = 110, Height = 26 };
         sfoglia.Click += (_, _) => ScegliApk();
         Controls.Add(sfoglia);
-        y += 22;
+        y += 30;
 
         Controls.Add(Etichetta(
             "Japanese version only. The Taiwan build has an anti-tampering check and will not run after patching.",
             18, y, false, Color.Firebrick));
-        y += 32;
-
-        // --- indirizzo: DISATTIVATO -----------------------------------------
-        // Il patch dell'indirizzo del server e' spento: il programma fa solo la
-        // traduzione in inglese. Il codice resta qui commentato (e il resto della
-        // logica e' intatto: con _cambiaIndirizzo mai spuntata, url resta null e
-        // Patcher.Costruisci non tocca l'indirizzo). Per riattivarlo basta
-        // togliere i commenti qui sotto e rinumerare i passi.
-        //
-        // _cambiaIndirizzo.SetBounds(18, y, 320, 22);
-        // _cambiaIndirizzo.Text = "2.  Change the server address";
-        // _cambiaIndirizzo.Font = new Font(Font, FontStyle.Bold);
-        // _cambiaIndirizzo.Checked = true;
-        // _cambiaIndirizzo.CheckedChanged += (_, _) => AggiornaStato();
-        // Controls.Add(_cambiaIndirizzo);
-        // y += 26;
-        //
-        // _indirizzo.SetBounds(38, y, 400, 24);
-        // _indirizzo.ReadOnly = true;
-        // _indirizzo.Text = MaschermaIndirizzo(_indirizzoReale);
-        // Controls.Add(_indirizzo);
-        // y += 34;
-        _cambiaIndirizzo.Checked = false;
-
-        // --- 2. lingua ------------------------------------------------------
-        _cambiaLingua.SetBounds(18, y, 420, 22);
-        _cambiaLingua.Text = "2.  Switch the game to English";
-        _cambiaLingua.Font = new Font(Font, FontStyle.Bold);
-        // Unica operazione rimasta: spuntata di default.
-        _cambiaLingua.Checked = true;
-        _cambiaLingua.CheckedChanged += (_, _) => AggiornaStato();
-        Controls.Add(_cambiaLingua);
-        y += 26;
-
+        y += 22;
         Controls.Add(Etichetta(
-            "Partial translation: monsters, menus, common messages and skills. Some text stays in Japanese.",
-            38, y, false, SystemColors.GrayText));
-        y += 40;
+            "The game connects to the private server (" + Indirizzo.Mascherato(Indirizzo.Server) + "). "
+            + "The English translation is downloaded from the server.",
+            18, y, false, SystemColors.GrayText));
+        y += 36;
 
-        // --- 3. crea --------------------------------------------------------
+        // --- 2. crea --------------------------------------------------------
         _crea.SetBounds(18, y, 250, 36);
-        _crea.Text = "3.  Create and save the APK";
+        _crea.Text = "2.  Create and save the APK";
         _crea.Font = new Font(Font, FontStyle.Bold);
         _crea.Click += (_, _) => Crea();
         Controls.Add(_crea);
         y += 48;
 
-        _log.SetBounds(18, y, 660, 180);
+        _log.SetBounds(18, y, 660, 200);
         _log.Multiline = true;
         _log.ReadOnly = true;
         _log.ScrollBars = ScrollBars.Vertical;
@@ -138,21 +83,13 @@ public class Form1 : Form
 
     private static Label Etichetta(string testo, int x, int y, bool grassetto, Color? colore = null)
     {
-        var l = new Label { Text = testo, AutoSize = true, Left = x, Top = y };
+        var l = new Label { Text = testo, AutoSize = true, Left = x, Top = y, BackColor = Color.Transparent };
         if (grassetto) l.Font = new Font(l.Font, FontStyle.Bold);
         if (colore.HasValue) l.ForeColor = colore.Value;
         return l;
     }
 
     private void Scrivi(string riga) => _log.AppendText(riga + Environment.NewLine);
-
-    /// <summary>Ultimi 4 caratteri veri, il resto sostituito da pallini — stessa lunghezza dell'originale.</summary>
-    private static string MaschermaIndirizzo(string reale)
-    {
-        const int visibili = 4;
-        if (reale.Length <= visibili) return reale;
-        return new string('•', reale.Length - visibili) + reale[^visibili..];
-    }
 
     private void ControllaJava()
     {
@@ -164,27 +101,17 @@ public class Form1 : Form
         {
             Scrivi("WARNING: Java is not installed.");
             Scrivi("Without Java the APK is created but NOT signed, and Android will refuse to install it.");
-            Scrivi("Install Java (adoptium.net) and reopen this program.");
+            Scrivi("Install the Java JDK (adoptium.net, choose JDK not JRE) and reopen this program.");
         }
     }
 
-    private void AggiornaStato()
-    {
-        _indirizzo.Enabled = _cambiaIndirizzo.Checked;
-
-        var apkOk = File.Exists(_percorsoApk.Text);
-        var indirizzoOk = !_cambiaIndirizzo.Checked
-                          || (_indirizzoReale.Trim().Length is > 0 and <= MaxCaratteri);
-        var qualcosaDaFare = _cambiaIndirizzo.Checked || _cambiaLingua.Checked;
-
-        _crea.Enabled = apkOk && indirizzoOk && qualcosaDaFare;
-    }
+    private void AggiornaStato() => _crea.Enabled = File.Exists(_percorsoApk.Text);
 
     private void ScegliApk()
     {
         using var f = new OpenFileDialog
         {
-            Title = "Choose the Monster Hunter Explore APK",
+            Title = "Choose the Monster Hunter Explore APK (Japanese)",
             Filter = "APK files (*.apk)|*.apk|All files (*.*)|*.*",
         };
         if (f.ShowDialog(this) != DialogResult.OK) return;
@@ -195,31 +122,8 @@ public class Form1 : Form
         AggiornaStato();
     }
 
-    private byte[]? CaricaTestiInglese()
-    {
-        // I testi tradotti viaggiano dentro l'eseguibile: l'utente scarica un
-        // file solo e non deve tenere insieme cartelle.
-        using var s = typeof(Form1).Assembly.GetManifestResourceStream("MhxrPatcher.GUI_msg_en.arc");
-        if (s == null) return null;
-        using var mem = new MemoryStream();
-        s.CopyTo(mem);
-        return mem.ToArray();
-    }
-
     private void Crea()
     {
-        byte[]? testi = null;
-        if (_cambiaLingua.Checked)
-        {
-            testi = CaricaTestiInglese();
-            if (testi == null)
-            {
-                MessageBox.Show(this, "The English texts are not included in this build of the program.",
-                    "Translation not available", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-        }
-
         using var salva = new SaveFileDialog
         {
             Title = "Where should I save the patched APK?",
@@ -236,22 +140,20 @@ public class Form1 : Form
             Scrivi("");
             Scrivi("--- start ---");
 
-            var url = _cambiaIndirizzo.Checked ? _indirizzoReale.Trim() : null;
             var ingresso = _percorsoApk.Text;
 
-            if (url != null)
-            {
-                Scrivi("  checking the manifest for the cleartext-traffic permission (can take a minute)...");
-                Application.DoEvents();
-                copiaTemporanea = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".apk");
-                File.Copy(ingresso, copiaTemporanea, overwrite: true);
-                var esitoManifest = ManifestFix.AssicuraCleartextTraffic(copiaTemporanea);
-                Scrivi("  manifest: " + esitoManifest.Messaggio);
-                if (esitoManifest.Riuscito) ingresso = copiaTemporanea;
-                else Scrivi("  WARNING: couldn't check/fix the manifest — if the source APK lacks the cleartext permission, the game may never connect.");
-            }
+            // Senza usesCleartextTraffic Android 9+ blocca ogni richiesta HTTP in
+            // chiaro: il gioco non manderebbe un solo pacchetto al server.
+            Scrivi("  checking the manifest for the cleartext-traffic permission (can take a minute)...");
+            Application.DoEvents();
+            copiaTemporanea = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".apk");
+            File.Copy(ingresso, copiaTemporanea, overwrite: true);
+            var esitoManifest = ManifestFix.AssicuraCleartextTraffic(copiaTemporanea);
+            Scrivi("  manifest: " + esitoManifest.Messaggio);
+            if (esitoManifest.Riuscito) ingresso = copiaTemporanea;
+            else Scrivi("  WARNING: couldn't check/fix the manifest — if the source APK lacks the cleartext permission, the game may never connect.");
 
-            var esito = Patcher.Costruisci(ingresso, salva.FileName, url, testi);
+            var esito = Patcher.Costruisci(ingresso, salva.FileName, Indirizzo.Server);
             foreach (var r in esito.Righe) Scrivi("  " + r);
 
             if (!esito.Riuscito)
@@ -290,7 +192,6 @@ public class Form1 : Form
         {
             if (copiaTemporanea != null) { try { File.Delete(copiaTemporanea); } catch { /* temporanea, non bloccante */ } }
             Cursor = Cursors.Default;
-            _crea.Enabled = true;
             AggiornaStato();
         }
     }

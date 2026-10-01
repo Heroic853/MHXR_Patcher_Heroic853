@@ -1,0 +1,86 @@
+===========================================================
+  MHXR Patcher - instructions
+===========================================================
+
+WHAT IT DOES
+------------
+Monster Hunter Explore was shut down and the game still looks for Capcom's
+servers, which no longer exist. This program takes YOUR copy of the original
+Japanese game and makes it connect to the private server:
+  - it writes the private server's address into the game (both 32 and 64 bit);
+  - it adds the Android permission the game needs to talk to the server.
+
+The English translation is NOT done by this program: the game downloads it from
+the private server by itself, the first time you log in.
+
+This program does NOT contain the game and does not download it. You download
+the original Japanese APK yourself (see step 1).
+
+
+WHAT YOU NEED
+-------------
+  1. Windows 10 or 11, 64 bit
+  2. The Java JDK, version 17 or newer (JDK, not JRE): https://adoptium.net
+  3. The ORIGINAL JAPANESE APK of the game, version 09.03.06
+
+
+STEP 1 - DOWNLOAD THE ORIGINAL JAPANESE APK
+-------------------------------------------
+Version 09.03.06 (package jp.co.capcom.android.explore), about 86 MB, plain APK:
+
+  https://mhxr.en.uptodown.com/android/download
+  (backup: https://apkcombo.com/ja/jp.co.capcom.android.explore/ )
+
+Check it is the right file (optional but recommended):
+  - size:    90,168,765 bytes
+  - SHA-256: 711db4e65a064f81a0c48c68bc2f26c4a90d76fd7f84fb8a70d000a019c7a6d5
+    In Windows PowerShell:  Get-FileHash .\the-file.apk
+If the numbers are different, it is a different or modified file: don't use it.
+
+Japanese version only. The Taiwan version has an anti-tampering check
+(AppGuard) and closes immediately after patching. That is not a bug of the
+patcher, every patcher has to re-sign the APK.
+
+
+STEP 2 - BEFORE UNINSTALLING THE OLD GAME (important)
+-----------------------------------------------------
+A patched APK has a different signature, so Android won't install it over the
+game you already have: you must UNINSTALL it first. Your character lives on the
+server, but to get it back you need the TRANSFER CODE, set up BEFORE
+uninstalling:
+  1. open the game you have now
+  2. set up the account transfer and write down code and password
+     (somewhere that is NOT the phone)
+  3. only then uninstall
+
+
+STEP 3 - PATCH
+--------------
+  1. Download MhxrPatcher.exe from the releases page of this project.
+     Edge/Chrome may say the file "is not commonly downloaded": click
+     "Keep". Windows may show "Windows protected your PC": click
+     "More info", then "Run anyway". This happens to every program that is
+     not signed with a paid certificate.
+  2. Open MhxrPatcher.exe
+  3. "Browse..." and choose the Japanese APK you downloaded
+  4. "Create and save the APK" and choose where to save it
+  5. Copy the new APK to the phone and install it (allow "unknown sources")
+  6. Open the game, use the account transfer with your code and password.
+     The first time, the game downloads the server's resources, English
+     translation included.
+
+
+TROUBLESHOOTING
+---------------
+"Java not found"
+    You installed the JRE instead of the JDK, or you need to restart the PC.
+
+The APK doesn't install
+    The old game is still installed: uninstall it first (transfer code!).
+
+The game opens and closes at once, with no message
+    You used the Taiwan version. Only the Japanese one works.
+
+The game opens but doesn't connect
+    Make sure you patched the ORIGINAL Japanese APK (step 1) with the
+    latest MhxrPatcher. If it still fails, the server may be offline.

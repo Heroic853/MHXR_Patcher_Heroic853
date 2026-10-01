@@ -37,8 +37,8 @@ jobs:
           tag_name: latest
           name: MhxrPatcher (ultima build)
           body: >
-            Build automatica dall'ultimo commit su main. Scarica
-            MhxrPatcher.exe e avvialo — non serve installare nient'altro a
-            parte il JDK (vedi ISTRUZIONI-UTENTI.txt).
+            Automatic build of the latest commit on main. Download the original
+            Japanese APK yourself (see INSTRUCTIONS.txt), then run MhxrPatcher.exe:
+            it points the game to the private server. Only the Java JDK is needed.
           files: publish/MhxrPatcher.exe
           prerelease: false
