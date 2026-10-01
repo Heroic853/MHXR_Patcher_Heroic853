@@ -205,8 +205,6 @@ public record SlotUrl(string Percorso, int Offset, string UrlAttuale, int Spazio
 /// </summary>
 public static class Patcher
 {
-    public const string PercorsoTesti = "assets/nativeAndroid/arc_cmn/GUI/GUI_msg.arc";
-
     /// <summary>
     /// Host che compaiono nella libreria ma NON sono il server di gioco: sono
     /// servizi accessori o residui del compilatore. Proporli all'utente
@@ -226,14 +224,22 @@ public static class Patcher
     public static List<SlotUrl> TrovaUrl(byte[] dati, string percorso)
     {
         var trovati = new List<SlotUrl>();
-        var ago = Encoding.ASCII.GetBytes("http://");
+        // "http" seguito da "://" o da "s://". Prima si cercava solo "http://": ma nell'APK
+        // giapponese ORIGINALE il server di gioco e' "https://mhxr-dispatch.s3-ap-northeast-1
+        // .amazonaws.com/", quindi su un APK vergine il patcher non lo vedeva e cambiava
+        // "http://203.191.249.158:13000/" (un indirizzo che il gioco non usa): l'APK non si
+        // collegava mai. Verificato su MHXR_base.apk, arm64-v8a e armeabi-v7a.
+        var ago = Encoding.ASCII.GetBytes("http");
 
-        for (int i = 0; i + ago.Length < dati.Length; i++)
+        for (int i = 0; i + ago.Length + 4 < dati.Length; i++)
         {
             bool combacia = true;
             for (int k = 0; k < ago.Length; k++)
                 if (dati[i + k] != ago[k]) { combacia = false; break; }
             if (!combacia) continue;
+            int dopo = i + ago.Length;
+            if (dati[dopo] == (byte)'s') dopo++;
+            if (dati[dopo] != (byte)':' || dati[dopo + 1] != (byte)'/' || dati[dopo + 2] != (byte)'/') continue;
 
             // fine della stringa: il primo byte nullo
             int fine = i;
@@ -272,8 +278,9 @@ public static class Patcher
     public record Esito(List<string> Righe, bool Riuscito);
 
     /// <summary>
-    /// Costruisce l'APK modificato. `nuovoUrl` null = non toccare l'indirizzo;
-    /// `testiInglese` null = non toccare la lingua. `urlVecchio`, se dato,
+    /// Costruisce l'APK modificato. `nuovoUrl` null = non toccare l'indirizzo.
+    /// La traduzione inglese non passa piu' da qui: la manda il server con gli
+    /// aggiornamenti delle risorse. `urlVecchio`, se dato,
     /// sceglie lo slot per corrispondenza ESATTA con l'indirizzo che contiene
     /// oggi, invece di indovinare con l'euristica IP/dimensione — serve per
     /// un APK gia' patchata in precedenza, dove lo slot giusto non e' piu'
@@ -281,7 +288,7 @@ public static class Patcher
     /// (scoperto un caso vero: uno slot IP inutilizzato aveva piu' spazio
     /// libero dello slot col dominio che il gioco usava davvero).
     /// </summary>
-    public static Esito Costruisci(string apkIngresso, string apkUscita, string? nuovoUrl, byte[]? testiInglese, string? urlVecchio = null)
+    public static Esito Costruisci(string apkIngresso, string apkUscita, string? nuovoUrl, string? urlVecchio = null)
     {
         var log = new List<string>();
         try
@@ -316,13 +323,6 @@ public static class Patcher
                         contenuto = mem.ToArray();
                     }
 
-                    // --- lingua ---
-                    if (testiInglese != null && voce.FullName.Equals(PercorsoTesti, StringComparison.OrdinalIgnoreCase))
-                    {
-                        contenuto = testiInglese;
-                        log.Add($"language: replaced {voce.FullName} ({contenuto.Length / 1024} KB)");
-                    }
-
                     // --- indirizzo del server ---
                     if (nuovoUrl != null && voce.FullName.EndsWith("libMHS.so", StringComparison.OrdinalIgnoreCase))
                     {
@@ -355,9 +355,17 @@ public static class Patcher
                          * nulla. Il caso Taiwan resta scoperto, ma quella build non
                          * e' comunque supportata.
                          */
+                        /*
+                         * 3) Ordine di scelta attuale: l'indirizzo esatto indicato (--url-vecchio),
+                         *    poi lo slot "mhxr-dispatch" (APK giapponese originale), poi lo slot che
+                         *    contiene gia' l'indirizzo nuovo (APK gia' patchato), e solo alla fine il
+                         *    piu' grande (APK patchato in passato con un altro indirizzo, es. duckdns).
+                         */
                         var candidati = TrovaUrl(contenuto, voce.FullName);
                         var slot = (urlVecchio != null ? candidati.FirstOrDefault(x => x.UrlAttuale == urlVecchio) : null)
-                            ?? candidati.OrderByDescending(x => x.SpazioMax).FirstOrDefault();
+                            ?? candidati.FirstOrDefault(x => x.UrlAttuale.Contains("mhxr-dispatch", StringComparison.OrdinalIgnoreCase))
+                            ?? candidati.FirstOrDefault(x => x.UrlAttuale == nuovoUrl)
+                            ?? candidati.Where(x => !x.UrlAttuale.Contains("203.191.249.158")).OrderByDescending(x => x.SpazioMax).FirstOrDefault();
                         if (slot == null)
                         {
                             log.Add($"WARNING: no address found in {voce.FullName}, left unchanged");

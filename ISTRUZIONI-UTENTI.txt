@@ -6,13 +6,30 @@ A COSA SERVE
 ------------
 Monster Hunter Explore e' stato chiuso, e il gioco cerca ancora i server
 Capcom che non esistono piu'. Questo programma prende la TUA copia del gioco
-e ne mette i testi in inglese (traduzione parziale).
+giapponese originale e la fa collegare al server privato: scrive l'indirizzo
+del server nel gioco (32 e 64 bit) e aggiunge il permesso Android che serve
+per parlare col server.
 
-Il programma NON cambia piu' l'indirizzo del server: parti da un APK che
-punta gia' al server privato (quello distribuito da chi gestisce il server).
+La traduzione inglese NON la fa questo programma: il gioco la scarica da solo
+dal server, al primo accesso.
 
-IMPORTANTE: il programma NON contiene il gioco e non lo scarica. Devi avere
-gia' il tuo file APK. Se non ce l'hai, questo strumento non ti serve a niente.
+IMPORTANTE: il programma NON contiene il gioco e non lo scarica. L'APK
+giapponese originale lo scarichi tu (vedi "DOVE SCARICARE L'APK").
+
+
+DOVE SCARICARE L'APK
+--------------------
+Versione 09.03.06 (jp.co.capcom.android.explore), circa 86 MB, APK normale:
+
+  https://mhxr.en.uptodown.com/android/download
+  (riserva: https://apkcombo.com/ja/jp.co.capcom.android.explore/ )
+
+Controllo consigliato che sia il file giusto:
+  - dimensione: 90.168.765 byte
+  - SHA-256: 711db4e65a064f81a0c48c68bc2f26c4a90d76fd7f84fb8a70d000a019c7a6d5
+    (in PowerShell:  Get-FileHash .
+ome-file.apk)
+Se i numeri sono diversi e' un file diverso o modificato: non usarlo.
 
 
 COSA TI SERVE
@@ -87,19 +104,15 @@ COME SI USA
 
   3. Pulsante "Sfoglia" - scegli il tuo file APK del gioco
 
-  4. "Switch the game to English" e' gia' spuntato.
-     La traduzione e' parziale: mostri, menu, messaggi comuni/di errore e
-     abilita' (nomi e testi). Restano in giapponese soprattutto i nomi di armi
-     e armature e i testi delle quest.
+  4. Pulsante "Create and save the APK" - scegli dove salvarlo sul PC
 
-  5. Pulsante "Create and save the APK" - scegli dove salvarlo sul PC
-
-  6. Copia il file sul telefono e installalo.
+  5. Copia il file sul telefono e installalo.
      Dovrai permettere l'installazione da fonti sconosciute: e' il telefono
      che chiede conferma perche' il file non viene dal Play Store.
 
-  7. Apri il gioco e usa il trasferimento account con il codice e la
-     password che avevi annotato al punto precedente.
+  6. Apri il gioco e usa il trasferimento account con il codice e la
+     password che avevi annotato al punto precedente. Al primo accesso il
+     gioco scarica le risorse del server, traduzione inglese compresa.
 
 
 SE QUALCOSA NON VA
@@ -118,5 +131,5 @@ Il gioco si apre e si chiude subito, senza nessun messaggio
     "ATTENZIONE AL PUNTO 3" piu' sopra.
 
 Il gioco si apre ma non si collega
-    Hai patchato un APK originale che punta ancora ai server Capcom, oppure
-    il server e' spento. Usa l'APK distribuito da chi gestisce il server.
+    Controlla di aver patchato l'APK giapponese ORIGINALE (vedi sopra) con
+    l'ultima versione del patcher. Se ancora non va, il server puo' essere spento.

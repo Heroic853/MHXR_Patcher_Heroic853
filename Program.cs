@@ -21,7 +21,7 @@ static class Program
     private static int DaRigaDiComando(string[] args)
     {
         string? ingresso = null, uscita = null, url = null, urlVecchio = null;
-        bool inglese = false, firma = true, controllaManifest = true;
+        bool firma = true, controllaManifest = true;
 
         foreach (var a in args)
         {
@@ -29,7 +29,6 @@ static class Program
             else if (a.StartsWith("--out=")) uscita = a[6..];
             else if (a.StartsWith("--url=")) url = a[6..];
             else if (a.StartsWith("--url-vecchio=")) urlVecchio = a[14..];
-            else if (a == "--inglese") inglese = true;
             else if (a == "--senza-firma") firma = false;
             else if (a == "--senza-manifest") controllaManifest = false;
             else if (a is "--aiuto" or "-h" or "--help") { Aiuto(); return 0; }
@@ -48,19 +47,17 @@ static class Program
             return 2;
         }
 
-        byte[]? testi = null;
-        if (inglese)
+        // Senza --url si usa l'indirizzo del server privato, come fa la finestra.
+        url ??= Indirizzo.Server;
+        if (url.Length > Indirizzo.MaxCaratteri)
         {
-            using var s = typeof(Program).Assembly.GetManifestResourceStream("MhxrPatcher.GUI_msg_en.arc");
-            if (s == null) { Console.Error.WriteLine("English texts not included in this build."); return 3; }
-            using var mem = new MemoryStream();
-            s.CopyTo(mem);
-            testi = mem.ToArray();
+            Console.Error.WriteLine($"The address is longer than {Indirizzo.MaxCaratteri} characters");
+            return 2;
         }
 
         var ingressoEffettivo = ingresso;
         var copiaTemporanea = (string?)null;
-        if (controllaManifest && url != null)
+        if (controllaManifest)
         {
             copiaTemporanea = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".apk");
             File.Copy(ingresso, copiaTemporanea, overwrite: true);
@@ -74,7 +71,7 @@ static class Program
 
         try
         {
-            var esito = Patcher.Costruisci(ingressoEffettivo, uscita, url, testi, urlVecchio);
+            var esito = Patcher.Costruisci(ingressoEffettivo, uscita, url, urlVecchio);
             foreach (var r in esito.Righe) Console.WriteLine("  " + r);
             if (!esito.Riuscito) return 1;
 
@@ -104,9 +101,8 @@ static class Program
         Console.WriteLine();
         Console.WriteLine("  --apk=<file>     starting APK              (required)");
         Console.WriteLine("  --out=<file>     APK to create             (required)");
-        Console.WriteLine("  --url=<url>      new server address        (max 47 characters)");
+        Console.WriteLine("  --url=<url>      server address            (default: the private server; max 47 characters)");
         Console.WriteLine("  --url-vecchio=<url>  replace THIS exact existing address instead of guessing the slot");
-        Console.WriteLine("  --inglese        replaces the texts with the translated ones");
         Console.WriteLine("  --senza-firma    don't sign (the APK won't install)");
         Console.WriteLine("  --senza-manifest skip the cleartext-traffic manifest check/fix (faster, riskier)");
         Console.WriteLine();
