@@ -42,3 +42,33 @@ jobs:
             it points the game to the private server. Only the Java JDK is needed.
           files: publish/MhxrPatcher.exe
           prerelease: false
+
+  # Versione per telefono: un APK che fa tutto da solo (patch, manifest, firma, installazione).
+  # Viene dopo la build dell'exe per non creare la release "latest" due volte insieme.
+  android:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Compila l'APK del patcher
+        run: gradle -p android assembleRelease --no-daemon
+
+      - name: Rinomina
+        run: cp android/app/build/outputs/apk/release/app-release.apk MhxrPatcher.apk
+
+      - name: Aggiunge l'APK alla release "latest"
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          files: MhxrPatcher.apk
+          prerelease: false

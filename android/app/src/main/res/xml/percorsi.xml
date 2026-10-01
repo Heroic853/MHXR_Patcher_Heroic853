@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- L'APK patchato sta in getExternalFilesDir(null)/output: lo si espone solo al programma di installazione. -->
+<paths>
+    <external-files-path name="output" path="output/" />
+</paths>

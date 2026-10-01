@@ -1,0 +1,52 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'mhxr.patcher'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'mhxr.patcher'
+        // java.util.Base64, java.nio.file e il permesso di installazione per app: Android 8+
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+
+    // Firma fissa (debug.keystore nella cartella del progetto, password "android" come la
+    // chiave di debug standard): ogni nuova versione del patcher si installa sopra la vecchia.
+    signingConfigs {
+        fissa {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.fissa
+        }
+        debug {
+            signingConfig signingConfigs.fissa
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    packaging {
+        resources {
+            excludes += ['META-INF/*.version', 'META-INF/LICENSE*', 'META-INF/NOTICE*']
+        }
+    }
+}
+
+dependencies {
+    // Libreria ufficiale Google per firmare APK (la stessa di apksigner del patcher PC).
+    implementation 'com.android.tools.build:apksig:8.5.2'
+    implementation 'androidx.core:core:1.13.1'
+}

@@ -115,6 +115,18 @@ COME SI USA
      gioco scarica le risorse del server, traduzione inglese compresa.
 
 
+DAL TELEFONO (senza PC)
+-----------------------
+  1. Col telefono scarica l'APK giapponese originale (vedi "DOVE SCARICARE L'APK").
+  2. Scarica MhxrPatcher.apk dalla pagina delle release del progetto e installalo
+     (permetti "installa app sconosciute" al browser quando Android lo chiede).
+  3. Apri MHXR Patcher: "Choose the Japanese APK", poi "Create the patched APK"
+     (ci vuole un minuto), poi "Install". La prima volta Android chiede di
+     permettere a MHXR Patcher di installare app: permettilo e premi di nuovo Install.
+  4. Come dal PC: prima imposta il codice di trasferimento e disinstalla il gioco vecchio.
+  Non serve scaricare altro: niente Java, niente PC.
+
+
 SE QUALCOSA NON VA
 ------------------
 "java not found" / "keytool not found"
