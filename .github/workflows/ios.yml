@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   ios:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
 
@@ -28,7 +28,10 @@ jobs:
         run: cd ios && xcodegen generate
 
       - name: Scarica ZIPFoundation
-        run: xcodebuild -resolvePackageDependencies -project ios/MhxrPatcher.xcodeproj -scheme MhxrPatcher
+        run: |
+          set -o pipefail
+          xcodebuild -version
+          xcodebuild -resolvePackageDependencies -project ios/MhxrPatcher.xcodeproj -scheme MhxrPatcher 2>&1 | tee build.log
 
       - name: Compila (senza firma)
         run: |
@@ -36,7 +39,7 @@ jobs:
           xcodebuild -project ios/MhxrPatcher.xcodeproj -scheme MhxrPatcher -configuration Release             -sdk iphoneos -derivedDataPath build             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build 2>&1 | tee build.log
       - name: Errori della compilazione (visibili come annotazioni)
         if: failure()
-        run: grep -E "error:|fatal|cannot|not found" build.log | head -40 | while IFS= read -r r; do echo "::error::$r"; done
+        run: grep -iE "error|fatal|cannot|not found|damaged|unable" build.log | head -40 | while IFS= read -r r; do echo "::error::$r"; done
 
       - name: Impacchetta l'IPA
         run: |

@@ -50,6 +50,7 @@ enum Patcher {
                 d = Data(b)
                 patchato = true
             }
+            if p == plist.path { d = try infoSistemato(d, log: log) }
             let machO = d.count >= 4 && ([0xFEEDFACF, 0xFEEDFACE, 0xBEBAFECA] as [UInt32]).contains(d.prefix(4).withUnsafeBytes { $0.load(as: UInt32.self) })
             let dimensione = d.count
             try w.addEntry(with: p, type: .file, uncompressedSize: Int64(dimensione), permissions: machO ? 0o755 : 0o644,
@@ -57,6 +58,18 @@ enum Patcher {
         }
         guard patchato else { throw ErrorePatch.eseguibile }
         log("IPA rebuilt without Apple's old signature")
+    }
+
+    /// Info.plist: il gioco (09.03.05, solo arm64) chiede ancora "armv7" in UIRequiredDeviceCapabilities; sui telefoni
+    /// recenti e su PlayCover (Mac) quel requisito puo' far rifiutare l'installazione. Si toglie solo quello.
+    /// L'http verso il server privato e' gia' permesso dal gioco (NSAllowsArbitraryLoads = true).
+    static func infoSistemato(_ d: Data, log: (String) -> Void) throws -> Data {
+        var formato = PropertyListSerialization.PropertyListFormat.xml
+        guard var info = try PropertyListSerialization.propertyList(from: d, options: [], format: &formato) as? [String: Any],
+              let richieste = info["UIRequiredDeviceCapabilities"] as? [String], richieste.contains("armv7") else { return d }
+        info["UIRequiredDeviceCapabilities"] = richieste.filter { $0 != "armv7" }
+        log("Info.plist: removed the old 32-bit (armv7) requirement")
+        return try PropertyListSerialization.data(fromPropertyList: info, format: formato, options: 0)
     }
 
     /// Firme e dati dell'App Store: chi installa (TrollStore, AltStore, SideStore) rifirma da capo.
