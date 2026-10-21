@@ -1,0 +1,53 @@
+name: Compila e pubblica MhxrPatcher per iPhone
+
+# Solo dal branch ios-version: non tocca la compilazione di main (build-release.yml, che fa .exe e .apk).
+# Il Mac di GitHub genera il progetto (XcodeGen), compila senza firma e aggiunge MhxrPatcher-iOS.ipa alla
+# release "latest". Sostituisce solo quel file: MhxrPatcher.apk e MhxrPatcher.exe e i loro download restano.
+on:
+  push:
+    branches: [ios-version]
+    paths: ['ios/**', '.github/workflows/ios.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ios:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: XcodeGen
+        run: brew install xcodegen
+
+      - name: Icona 1024x1024 (la stessa dell'app Android, ingrandita)
+        run: sips -z 1024 1024 ios/risorse/icona.png --out ios/MhxrPatcher/Assets.xcassets/AppIcon.appiconset/icona-1024.png
+
+      - name: Genera il progetto
+        run: cd ios && xcodegen generate
+
+      - name: Compila (senza firma)
+        run: >
+          xcodebuild -project ios/MhxrPatcher.xcodeproj -scheme MhxrPatcher -configuration Release
+          -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build
+          CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+
+      - name: Impacchetta l'IPA
+        run: |
+          mkdir Payload
+          cp -R build/Build/Products/Release-iphoneos/MhxrPatcher.app Payload/
+          zip -qry MhxrPatcher-iOS.ipa Payload
+          ls -la MhxrPatcher-iOS.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MhxrPatcher-iOS
+          path: MhxrPatcher-iOS.ipa
+
+      - name: Aggiunge l'IPA alla release "latest"
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          files: MhxrPatcher-iOS.ipa
+          prerelease: false

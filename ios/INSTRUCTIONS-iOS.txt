@@ -1,0 +1,34 @@
+MHXR Patcher for iPhone / iPad
+==============================
+
+The patcher only changes the server address inside the game. Everything else
+(English translation, events, updates) comes from the private server.
+
+What you need
+-------------
+- The original Japanese IPA of the game, version 09.03.05 (jp.co.capcom.explorejp).
+  It must be a DECRYPTED IPA: the patcher refuses an IPA still encrypted by Apple.
+- One of these to install apps that are not from the App Store:
+    * TrollStore (permanent install; only some iOS versions: 14.0-16.6.1 and 17.0)
+    * AltStore or SideStore (free Apple ID; the app must be refreshed every 7 days,
+      AltStore/SideStore do it for you)
+    * Sideloadly on a Windows PC or a Mac (free Apple ID, 7 days)
+  On iOS 16 and later, turn on Settings > Privacy & Security > Developer Mode
+  the first time you install an app this way.
+
+Steps
+-----
+1. Install MhxrPatcher-iOS.ipa (from the "latest" release) with TrollStore,
+   AltStore, SideStore or Sideloadly.
+2. Save the original Japanese IPA in the Files app.
+3. Open MHXR Patcher:
+     1. Choose the Japanese IPA
+     2. Create the patched IPA (it takes about a minute)
+     3. Install: the share menu opens, choose TrollStore, AltStore or SideStore.
+   The patched IPA also stays in Files > On My iPhone > MHXR Patcher.
+4. If you already have the game: set up the transfer code first, then delete it.
+
+Playing on a Mac
+----------------
+Macs with an Apple chip (M1, M2, M3, M4) can run the patched IPA with PlayCover
+(free). Intel Macs cannot.
