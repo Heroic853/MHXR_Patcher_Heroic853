@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import UniformTypeIdentifiers
 
 /// Patcher sul telefono, come l'app Android (MainActivity.java): si sceglie l'IPA giapponese originale,

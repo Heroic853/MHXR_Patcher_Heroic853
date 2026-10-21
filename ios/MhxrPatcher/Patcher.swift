@@ -50,7 +50,7 @@ enum Patcher {
                 d = Data(b)
                 patchato = true
             }
-            let machO = d.count >= 4 && [0xCFFAEDFE, 0xCEFAEDFE, 0xBEBAFECA].contains(d.prefix(4).withUnsafeBytes { $0.load(as: UInt32.self) })
+            let machO = d.count >= 4 && [0xFEEDFACF, 0xFEEDFACE, 0xBEBAFECA] as [UInt32].contains(d.prefix(4).withUnsafeBytes { $0.load(as: UInt32.self) })
             let dimensione = d.count
             try w.addEntry(with: p, type: .file, uncompressedSize: Int64(dimensione), permissions: machO ? 0o755 : 0o644,
                            compressionMethod: .deflate, provider: { pos, n in d.subdata(in: Int(pos)..<min(Int(pos) + n, dimensione)) })
