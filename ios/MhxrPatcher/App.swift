@@ -15,8 +15,6 @@ struct Schermata: View {
     @State private var ingresso: URL?
     @State private var uscita: URL?
     @State private var lavoro = false
-    @State private var scegli = false
-    @State private var condividi = false
 
     var body: some View {
         ZStack {
@@ -28,9 +26,9 @@ struct Schermata: View {
                     .font(.system(size: 13)).foregroundColor(Color(red: 178 / 255, green: 34 / 255, blue: 34 / 255))
                 Text("The game will connect to the private server (\(Indirizzo.mascherato(Indirizzo.server))). The English translation is downloaded from the server.")
                     .font(.system(size: 13)).foregroundColor(.gray)
-                bottone("1.  Choose the Japanese IPA", attivo: !lavoro) { scegli = true }
+                bottone("1.  Choose the Japanese IPA", attivo: !lavoro) { Selettore.condiviso.apri { copia($0) } }
                 bottone("2.  Create the patched IPA", attivo: ingresso != nil && !lavoro) { crea() }
-                bottone("3.  Install", attivo: uscita != nil && !lavoro) { condividi = true }
+                bottone("3.  Install", attivo: uscita != nil && !lavoro) { if let u = uscita { condividi(u) } }
                 Text("Install opens the share menu: choose TrollStore (permanent) or AltStore / SideStore (signed with your Apple ID). Before installing, set up the transfer code in the game you have now, then delete it.")
                     .font(.system(size: 12)).foregroundColor(.gray)
                 ScrollView {
@@ -41,10 +39,6 @@ struct Schermata: View {
             }
             .padding(18)
         }
-        .fileImporter(isPresented: $scegli, allowedContentTypes: [UTType(filenameExtension: "ipa") ?? .data, .data]) { r in
-            if case .success(let u) = r { copia(u) } else if case .failure(let e) = r { scrivi("ERROR reading the file: \(e.localizedDescription)") }
-        }
-        .sheet(isPresented: $condividi) { if let u = uscita { Condividi(file: u) } }
         .onOpenURL { copia($0) } // "Apri con MHXR Patcher" dall'app File
     }
 
@@ -69,7 +63,14 @@ struct Schermata: View {
                 try? FileManager.default.removeItem(at: f)
                 try FileManager.default.copyItem(at: u, to: f)
                 let mb = ((try? f.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0) / 1024 / 1024
-                scrivi("IPA selected (\(mb) MB)")
+                // Un IPA e' uno zip: inizia con "PK". Un download interrotto o una pagina web salvata no.
+                let inizio = (try? FileHandle(forReadingFrom: f).readData(ofLength: 2)) ?? Data()
+                guard inizio == Data([0x50, 0x4B]) else {
+                    try? FileManager.default.removeItem(at: f)
+                    scrivi("ERROR: \(u.lastPathComponent) (\(mb) MB) is not an IPA. Download it again (the original is about 68 MB).")
+                    return
+                }
+                scrivi("IPA selected: \(u.lastPathComponent) (\(mb) MB)")
                 DispatchQueue.main.async { ingresso = f }
             } catch { scrivi("ERROR reading the file: \(error.localizedDescription)") }
         }
@@ -93,9 +94,47 @@ struct Schermata: View {
     }
 }
 
-/// Menu di condivisione: da qui l'IPA va a TrollStore, AltStore o SideStore ("Apri in...").
-struct Condividi: UIViewControllerRepresentable {
-    let file: URL
-    func makeUIViewController(context: Context) -> UIActivityViewController { UIActivityViewController(activityItems: [file], applicationActivities: nil) }
-    func updateUIViewController(_ c: UIActivityViewController, context: Context) {}
+/// La schermata in cima, da cui aprire selettore e menu di condivisione con UIKit. Con SwiftUI (.fileImporter e
+/// .sheet sulla stessa vista) su iOS 15/16 il selettore a volte non si apriva o non lasciava scegliere l'IPA.
+private func inCima() -> UIViewController? {
+    let scene = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+    let scena = scene.first { $0.activationState == .foregroundActive } ?? scene.first
+    var vc = scena?.windows.first { $0.isKeyWindow }?.rootViewController ?? scena?.windows.first?.rootViewController
+    while let sopra = vc?.presentedViewController { vc = sopra }
+    return vc
+}
+
+/// Selettore dei file: accetta qualsiasi file (.item: un .ipa scaricato da Safari puo' avere un tipo qualsiasi) e lo
+/// copia dentro l'app (asCopy), cosi' funziona anche da Download, iCloud Drive o altre app.
+final class Selettore: NSObject, UIDocumentPickerDelegate {
+    static let condiviso = Selettore()
+    private var scelto: ((URL) -> Void)?
+
+    func apri(_ fatto: @escaping (URL) -> Void) {
+        scelto = fatto
+        let p = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
+        p.delegate = self
+        p.allowsMultipleSelection = false
+        inCima()?.present(p, animated: true)
+    }
+
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        if let u = urls.first { scelto?(u) }
+        scelto = nil
+    }
+
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) { scelto = nil }
+}
+
+/// Menu di condivisione: da qui l'IPA va a TrollStore, AltStore o SideStore ("Apri in..."). Su iPad serve un punto
+/// di partenza per il riquadro, se no l'app si chiude.
+private func condividi(_ file: URL) {
+    guard let vc = inCima() else { return }
+    let a = UIActivityViewController(activityItems: [file], applicationActivities: nil)
+    if let p = a.popoverPresentationController, let v = vc.view {
+        p.sourceView = v
+        p.sourceRect = CGRect(x: v.bounds.midX, y: v.bounds.midY, width: 0, height: 0)
+        p.permittedArrowDirections = []
+    }
+    vc.present(a, animated: true)
 }
