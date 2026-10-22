@@ -11,7 +11,7 @@ struct MhxrPatcherApp: App {
 }
 
 struct Schermata: View {
-    @State private var log = "Download the original Japanese IPA first (see the instructions on GitHub).\n"
+    @State private var log = ""
     @State private var ingresso: URL?
     @State private var uscita: URL?
     @State private var lavoro = false
